@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "minha_farmacinha"
 version = "0.1.0"
 authors = [
-    { name = "Ivan", email = "seu.email@exemplo.com" },
+    { name = "Ivan", email = "ivanmarti.alves@gmail.com" },
 ]
 description = "Backend da aplicação Minha Farmacinha"
 requires-python = ">=3.8"
