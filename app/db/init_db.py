@@ -1,11 +1,12 @@
 from app.db.base_class import Base
-from sqlalchemy import inspect
 from app.db.session import engine
-from app.models.user import User  # Importa o modelo para registrar no Base
+from app.models import user 
 
 def init_db():
+    print("Criando tabelas no banco de dados...")
     Base.metadata.create_all(bind=engine)
-    inspector = inspect(engine)
+    print("Tabelas criadas com sucesso.")
+    
     
 if __name__ == "__main__":
     init_db()
