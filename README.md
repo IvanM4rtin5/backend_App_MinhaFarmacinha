@@ -1,4 +1,4 @@
-# Minha Farmacinha - Backend
+# Minha Farmacinha - Backend - in developing
 
 Backend da aplicação Minha Farmacinha, desenvolvido com FastAPI.
 
