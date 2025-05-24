@@ -23,4 +23,4 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 async def root():
-    return {"message": "Bem-vindo à API da Minha Farmacinha"} 
+    return { "Bem-vindo à API da Minha Farmacinha. Por Ivan Martins"} 
