@@ -1,6 +1,6 @@
 from app.db.base_class import Base
 from app.db.session import engine
-from app.models import user 
+from app.models import user, medication 
 
 def init_db():
     print("Criando tabelas no banco de dados...")
