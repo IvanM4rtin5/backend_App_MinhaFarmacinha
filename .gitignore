@@ -48,3 +48,7 @@ htmlcov/
 # Alembic
 alembic/versions/*
 !alembic/versions/.gitkeep 
+
+# Connection
+app/connection_db/conection.py
+
