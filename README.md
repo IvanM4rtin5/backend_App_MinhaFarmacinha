@@ -1,70 +1,68 @@
-# Minha Farmacinha - Backend - in developing
+# Minha Farmacinha - Backend - in development
 
-Backend da aplicação Minha Farmacinha, desenvolvido com FastAPI.
+Backend of the Minha Farmacinha application, developed with FastAPI.
 
-## Requisitos
+## Requirements
 
 - Python 3.8+
 - PostgreSQL
-- Firebase (para autenticação)
+- Firebase (for authentication)
 
-## Configuração do Ambiente
+## Environment Configuration
 
-1. Clone o repositório
-2. Crie um ambiente virtual:
+1. Clone the repository
+2. Create a virtual environment:
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-.\venv\Scripts\activate   # Windows
+```
+And activate the venv
+```bash
+source venv/bin/activate # Linux/Mac
+.\venv\Scripts\activate # Windows
 ```
 
-3. Instale as dependências:
+3. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Copie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
+4. Copy the `.env.example` file to `.env` and configure the environment variables:
 
 ```bash
 cp .env.example .env
 ```
-
-5. Configure o banco de dados:
-
+5. Configure the database:
 ```bash
 alembic upgrade head
 ```
-
-6. Execute a aplicação:
-
+6. Run the application:
 ```bash
 uvicorn app.main:app --reload
 ```
-
-## Estrutura do Projeto
+## Project Structure
 
 ```
 app/
-├── api/          # Rotas da API
-├── core/         # Configurações core
-├── models/       # Modelos SQLAlchemy
-├── schemas/      # Schemas Pydantic
-├── services/     # Lógica de negócio
-└── utils/        # Utilitários
+├── api/ # API Routes
+├── core/ # Core Settings
+├── models/ # SQLAlchemy Models
+├── schemas/ # Schemas Pydantic
+├── services/ # Business logic
+└── utils/ # Utilities
 ```
 
-## Documentação da API
+## API documentation
 
-A documentação da API estará disponível em:
+API documentation will be available at:
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## Testes
+## Tests
 
-Para executar os testes:
+To run the tests:
 
 ```bash
 pytest
