@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
-        "http://localhost:3000",  # Frontend
-        "http://localhost:8000",  # Backend
+        "http://localhost:9000",    # Frontend Quasar
+        "http://127.0.0.1:9000",    # Frontend Quasar (alternativa)
     ]
     
     # Database
