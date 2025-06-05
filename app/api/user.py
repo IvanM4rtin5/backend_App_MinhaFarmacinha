@@ -13,7 +13,6 @@ async def get_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Tentar buscar por ID primeiro
     try:
         user_id = int(identifier)
         user = db.query(User).filter(User.id == user_id).first()
