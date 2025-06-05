@@ -10,6 +10,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     birth_date = Column(Date, nullable=True)
-    
-    # Relacionamento com medicamentos
+
+    # Relationship with Medication
     medications = relationship("Medication", back_populates="user")
