@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from typing import Optional
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.models.user import User
@@ -17,10 +18,10 @@ async def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     try:
-        # Remove o prefixo "Bearer " do token
+        # Remove the prefix "Bearer " of token
         token = authorization.replace("Bearer ", "")
         
-        # Decodifica o token
+        # Decodify the token
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
         
@@ -47,19 +48,28 @@ async def get_current_user(
 
 @router.post("/register", response_model=UserOut)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    user = db.query(User).filter((User.email == user_in.email) | (User.username == user_in.username)).first()
+    email = user_in.email.strip().lower()
+    username = user_in.username.strip().lower()
+    print("Recebido:", email, username)
+    user = db.query(User).filter(
+        (User.email == email) | (User.username == username)
+    ).first()
     if user:
         raise HTTPException(status_code=400, detail="Usuário ou email já existe.")
 
     new_user = User(
-        username=user_in.username,
-        email=user_in.email,
+        username=username,
+        email=email,
         hashed_password=hash_password(user_in.password),
         birth_date=user_in.birth_date
     )
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    try:
+        db.commit()
+        db.refresh(new_user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Usuário ou email já existe.")
     return new_user
 
 class LoginData(BaseModel):
