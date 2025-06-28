@@ -13,3 +13,6 @@ class User(Base):
 
     # Relationship with Medication
     medications = relationship("Medication", back_populates="user")
+    
+    # Relationship with Notification
+    notifications = relationship("Notification", back_populates="user")
