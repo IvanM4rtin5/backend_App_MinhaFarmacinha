@@ -1,7 +1,7 @@
 # app/services/shopping.py
 from sqlalchemy.orm import Session
 from app.models.shopping import ShoppingItem
-from app.schemas.shopping import ShoppingItemCreate, ShoppingItemUpdate
+from app.schemas.shopping import ShoppingItemCreate
 
 def create_shopping_item(db: Session, item: ShoppingItemCreate, user_id: int):
     db_item = ShoppingItem(**item.dict(), user_id=user_id)
