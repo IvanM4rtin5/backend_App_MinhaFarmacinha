@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.db.session import get_db
-from app.dependencies.auth import get_current_user
+from app.db.session import get_db, SessionLocal
+from app.dependencies.auth import get_current_user, get_user_from_token
 from app.models.user import User
 from app.schemas.notification import (
     NotificationCreate, 
@@ -13,13 +13,15 @@ from app.schemas.notification import (
 )
 from app.services.notification import NotificationService
 from app.utils.websocket_manager import manager
+import asyncio
+
 
 router = APIRouter(prefix="/notification", tags=["notification"])
 
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
-    """Endpoint WebSocket para notificações em tempo real"""
     await manager.connect(websocket, user_id)
+    print("CHEGOU NO HANDLER! user_id:", user_id)
     try:
         while True:
             data = await websocket.receive_text()
@@ -27,7 +29,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         manager.disconnect(websocket, user_id)
 
 @router.post("/", response_model=Notification)
-def create_notification(
+async def create_notification(
     notification_data: NotificationCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -36,7 +38,27 @@ def create_notification(
     if notification_data.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Não autorizado a criar notificação para outro usuário")
     
-    return NotificationService.create_notification(db, notification_data)
+    notification = NotificationService.create_notification(db, notification_data)
+
+    notification_dict = {
+        "id": notification.id,
+        "title": notification.title,
+        "message": notification.message,
+        "notification_type": str(notification.notification_type), 
+        "status": str(notification.status),
+        "scheduled_for": notification.scheduled_for.isoformat() if notification.scheduled_for else None,
+        "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
+        "read_at": notification.read_at.isoformat() if notification.read_at else None,
+        "created_at": notification.created_at.isoformat() if notification.created_at else None,
+        "medication_name": notification.medication.name if notification.medication else None
+    }
+
+    await manager.send_personal_message(
+        {"type": "new_notification", "notification": notification_dict},
+        notification.user_id
+    )
+
+    return notification
 
 @router.get("/", response_model=List[NotificationResponse])
 def get_notifications(
@@ -59,10 +81,10 @@ def get_notifications(
             "message": notification.message,
             "notification_type": notification.notification_type,
             "status": notification.status,
-            "scheduled_for": notification.scheduled_for,
-            "sent_at": notification.sent_at,
-            "read_at": notification.read_at,
-            "created_at": notification.created_at,
+            "scheduled_for": notification.scheduled_for.isoformat() if notification.scheduled_for else None,
+            "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
+            "read_at": notification.read_at.isoformat() if notification.read_at else None,
+            "created_at": notification.created_at.isoformat() if notification.created_at else None,
             "medication_name": None
         }
         
@@ -90,10 +112,10 @@ def get_notification(
         "message": notification.message,
         "notification_type": notification.notification_type,
         "status": notification.status,
-        "scheduled_for": notification.scheduled_for,
-        "sent_at": notification.sent_at,
-        "read_at": notification.read_at,
-        "created_at": notification.created_at,
+        "scheduled_for": notification.scheduled_for.isoformat() if notification.scheduled_for else None,
+        "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
+        "read_at": notification.read_at.isoformat() if notification.read_at else None,
+        "created_at": notification.created_at.isoformat() if notification.created_at else None,
         "medication_name": notification.medication.name if notification.medication else None
     }
     

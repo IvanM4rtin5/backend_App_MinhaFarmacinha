@@ -4,11 +4,11 @@ from datetime import datetime
 from enum import Enum
 
 class NotificationType(str, Enum):
-    MEDICATION_REMINDER = "medication_reminder"
-    LOW_STOCK_ALERT = "low_stock_alert"
-    MEDICATION_EXPIRY = "medication_expiry"
-    REFILL_REMINDER = "refill_reminder"
-    GENERAL = "general"
+    MEDICATION_REMINDER = "MEDICATION_REMINDER"
+    LOW_STOCK_ALERT = "LOW_STOCK_ALERT"
+    MEDICATION_EXPIRY = "MEDICATION_EXPIRY"
+    REFILL_REMINDER = "REFILL_REMINDER"
+    GENERAL = "GENERAL"
 
 class NotificationStatus(str, Enum):
     PENDING = "pending"

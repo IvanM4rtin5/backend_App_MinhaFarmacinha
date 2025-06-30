@@ -17,9 +17,7 @@ class ConnectionManager:
     """
     
     def __init__(self):
-        # Armazena conexões ativas por usuário
         self.active_connections: Dict[int, List[WebSocket]] = {}
-        # Armazena todas as conexões ativas
         self.all_connections: Set[WebSocket] = set()
     
     async def connect(self, websocket: WebSocket, user_id: int):
@@ -115,9 +113,7 @@ class ConnectionManager:
                 logger.error(f"Erro ao enviar broadcast: {str(e)}")
                 disconnected_websockets.append(websocket)
         
-        # Remove conexões que falharam
         for websocket in disconnected_websockets:
-            # Encontra o user_id da conexão
             for user_id, connections in self.active_connections.items():
                 if websocket in connections:
                     self.disconnect(websocket, user_id)

@@ -5,11 +5,11 @@ import enum
 from app.db.base_class import Base
 
 class NotificationType(enum.Enum):
-    MEDICATION_REMINDER = "medication_reminder"
-    LOW_STOCK_ALERT = "low_stock_alert"
-    MEDICATION_EXPIRY = "medication_expiry"
-    REFILL_REMINDER = "refill_reminder"
-    GENERAL = "general"
+    MEDICATION_REMINDER = "MEDICATION_REMINDER"
+    LOW_STOCK_ALERT = "LOW_STOCK_ALERT"
+    MEDICATION_EXPIRY = "MEDICATION_EXPIRY"
+    REFILL_REMINDER = "REFILL_REMINDER"
+    GENERAL = "GENERAL"
 
 class NotificationStatus(enum.Enum):
     PENDING = "pending"
@@ -30,7 +30,6 @@ class Notification(Base):
     read_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
-    # Relacionamentos
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     medication_id = Column(Integer, ForeignKey("medications.id"), nullable=True)
     

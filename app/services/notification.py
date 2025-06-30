@@ -114,11 +114,9 @@ class NotificationService:
         notifications = []
         
         for medication in medications:
-            # Verifica se o medicamento tem estoque
             if medication.stock <= 0:
                 continue
             
-            # Cria notificação baseada na frequência do medicamento
             notification = NotificationService.create_notification(
                 db=db,
                 notification_data=NotificationCreate(
@@ -127,7 +125,7 @@ class NotificationService:
                     notification_type=NotificationType.MEDICATION_REMINDER,
                     user_id=user_id,
                     medication_id=medication.id,
-                    scheduled_for=datetime.utcnow() + timedelta(minutes=5)  # Exemplo: 5 min
+                    scheduled_for=datetime.utcnow() + timedelta(minutes=5) 
                 )
             )
             notifications.append(notification)

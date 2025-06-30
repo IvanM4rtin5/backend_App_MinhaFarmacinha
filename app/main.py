@@ -9,12 +9,11 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json"
 )
 
-# Config CORS - Corrigido para permitir localhost:9000
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:9000", "http://127.0.0.1:9000"], 
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS","WebSocket"],
     allow_headers=["*"],
     expose_headers=["*"],
     max_age=3600,
