@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.db.session import get_db
 from app.models.medication import Medication
 from app.schemas.medication import MedicationCreate, MedicationUpdate, Medication as MedicationSchema
-from app.api.auth import get_current_user
+from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.services.medication import (
     create_medication, get_medications, get_medication, 

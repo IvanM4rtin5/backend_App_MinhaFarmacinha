@@ -81,8 +81,7 @@ def get_medications(
         query = query.filter(Medication.category == category)
     
     medications = query.offset(skip).limit(limit).all()
-    
-    # Adiciona cálculos de estoque para cada medicamento
+
     for medication in medications:
         days_until_empty = calculate_days_until_empty(
             medication.frequency, 
