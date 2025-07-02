@@ -13,7 +13,6 @@ from app.schemas.notification import (
 )
 from app.services.notification import NotificationService
 from app.utils.websocket_manager import manager
-import asyncio
 
 
 router = APIRouter(prefix="/notification", tags=["notification"])
@@ -203,13 +202,14 @@ def mark_all_notifications_as_read(
 ):
     """Marca todas as notificações do usuário como lidas"""
     notifications = NotificationService.get_user_notifications(
-        db, current_user.id, status=NotificationStatus.SENT
+        db, current_user.id, status=None
     )
     
     count = 0
     for notification in notifications:
-        if NotificationService.mark_as_read(db, notification.id, current_user.id):
-            count += 1
+        if notification.status != NotificationStatus.READ:
+            if NotificationService.mark_as_read(db, notification.id, current_user.id):
+                count += 1
     
     return {
         "message": f"Marcadas {count} notificações como lidas",

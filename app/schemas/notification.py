@@ -11,10 +11,10 @@ class NotificationType(str, Enum):
     GENERAL = "GENERAL"
 
 class NotificationStatus(str, Enum):
-    PENDING = "pending"
-    SENT = "sent"
-    READ = "read"
-    FAILED = "failed"
+    PENDING = "PENDING"
+    SENT = "SENT"
+    READ = "READ"
+    FAILED = "FAILED"
 
 class NotificationBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)

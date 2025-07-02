@@ -12,10 +12,10 @@ class NotificationType(enum.Enum):
     GENERAL = "GENERAL"
 
 class NotificationStatus(enum.Enum):
-    PENDING = "pending"
-    SENT = "sent"
-    READ = "read"
-    FAILED = "failed"
+    PENDING = "PENDING"
+    SENT = "SENT"
+    READ = "READ"
+    FAILED = "FAILED"
 
 class Notification(Base):
     __tablename__ = "notifications"

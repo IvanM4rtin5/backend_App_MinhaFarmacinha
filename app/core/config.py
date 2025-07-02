@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
         "http://localhost:9000",    # Frontend Quasar
-        "http://127.0.0.1:9000",    # Frontend Quasar (alternativa)
+        "http://192.168.0.108:9000",    # Frontend Quasar (alternativa)
     ]
     
     # Database
@@ -19,9 +19,6 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    # Firebase
-    FIREBASE_CREDENTIALS_PATH: str
     
     class Config:
         env_file = ".env"
