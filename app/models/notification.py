@@ -34,4 +34,6 @@ class Notification(Base):
     medication_id = Column(Integer, ForeignKey("medications.id"), nullable=True)
     
     user = relationship("User", back_populates="notifications")
-    medication = relationship("Medication") 
+    medication = relationship("Medication")
+    medication_name = Column(String, nullable=True)
+    medication_dosage = Column(String, nullable=True) 

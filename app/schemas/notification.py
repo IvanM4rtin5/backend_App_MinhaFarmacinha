@@ -25,6 +25,8 @@ class NotificationBase(BaseModel):
 class NotificationCreate(NotificationBase):
     user_id: int
     medication_id: Optional[int] = None
+    medication_name: Optional[str] = None
+    medication_dosage: Optional[str] = None
 
 class NotificationUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)

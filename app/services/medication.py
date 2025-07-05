@@ -4,6 +4,9 @@ from app.schemas.medication import MedicationCreate, MedicationUpdate
 from typing import List, Optional
 import re
 from datetime import datetime, timedelta
+from app.services.notification import NotificationService
+from app.models.notification import NotificationType, NotificationStatus, Notification
+from app.schemas.notification import NotificationCreate
 
 def calculate_days_until_empty(frequency: str, stock: int, pills_per_box: int) -> Optional[int]:
     """
@@ -183,6 +186,8 @@ def auto_remove_empty_medications(db: Session, user_id: int) -> int:
     Remove automaticamente medicamentos com estoque zero.
     Retorna o número de medicamentos removidos.
     """
+    from app.models.notification import Notification  
+
     empty_medications = db.query(Medication).filter(
         Medication.user_id == user_id,
         Medication.stock <= 0
@@ -190,7 +195,51 @@ def auto_remove_empty_medications(db: Session, user_id: int) -> int:
     
     count = len(empty_medications)
     for medication in empty_medications:
+        NotificationService.create_notification(
+            db,
+            NotificationCreate(
+                title=f"Medicamento acabou: {medication.name}",
+                message=f"O medicamento {medication.name} acabou. Considere repor o estoque.",
+                notification_type=NotificationType.MEDICATION_EXPIRY,
+                user_id=user_id,
+                medication_id=medication.id,
+                medication_name=medication.name,
+                medication_dosage=str(medication.dosage)
+            )
+        )
         db.delete(medication)
     
     db.commit()
-    return count 
+    return count
+
+def notify_critical_stock(db: Session, user_id: int):
+    """
+    Cria uma notificação se algum medicamento estiver a dois dias de acabar.
+    """
+    medications = db.query(Medication).filter(Medication.user_id == user_id).all()
+    for medication in medications:
+        days_until_empty = calculate_days_until_empty(
+            medication.frequency, 
+            medication.stock, 
+            medication.pills_per_box
+        )
+
+        if days_until_empty is not None and 0 < days_until_empty <= 7:
+            existing = db.query(Notification).filter(
+                Notification.user_id == user_id,
+                Notification.medication_id == medication.id,
+                Notification.notification_type == NotificationType.LOW_STOCK_ALERT,
+                Notification.status == NotificationStatus.PENDING
+            ).first()
+            if not existing:
+                NotificationService.create_notification(
+                    db,
+                    NotificationCreate(
+                        title=f"Medicamento quase acabando: {medication.name}",
+                        message=f"O medicamento {medication.name} está a {days_until_empty} dia(s) de acabar.",
+                        notification_type=NotificationType.LOW_STOCK_ALERT,
+                        user_id=user_id,
+                        medication_id=medication.id
+                    )
+                )
+    db.commit() 

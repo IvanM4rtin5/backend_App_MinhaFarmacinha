@@ -20,7 +20,9 @@ class NotificationService:
             notification_type=notification_data.notification_type,
             user_id=notification_data.user_id,
             medication_id=notification_data.medication_id,
-            scheduled_for=notification_data.scheduled_for
+            scheduled_for=notification_data.scheduled_for,
+            medication_name=notification_data.medication_name,
+            medication_dosage=notification_data.medication_dosage
         )
         db.add(db_notification)
         db.commit()
@@ -117,6 +119,7 @@ class NotificationService:
             if medication.stock <= 0:
                 continue
             
+            print(f"CRIANDO NOTIFICAÇÃO: {medication.name} para user {user_id}")
             notification = NotificationService.create_notification(
                 db=db,
                 notification_data=NotificationCreate(
@@ -125,7 +128,9 @@ class NotificationService:
                     notification_type=NotificationType.MEDICATION_REMINDER,
                     user_id=user_id,
                     medication_id=medication.id,
-                    scheduled_for=datetime.utcnow() + timedelta(minutes=5) 
+                    medication_name=medication.name,
+                    medication_dosage=str(medication.dosage),
+                    scheduled_for=datetime.utcnow() + timedelta(minutes=30) 
                 )
             )
             notifications.append(notification)
@@ -138,12 +143,13 @@ class NotificationService:
         medications = db.query(Medication).filter(
             and_(
                 Medication.user_id == user_id,
-                Medication.stock <= 5  # Alerta quando estoque <= 5
+                Medication.stock <= 7
             )
         ).all()
         
         notifications = []
         for medication in medications:
+            print(f"CRIANDO NOTIFICAÇÃO: {medication.name} para user {user_id}")
             notification = NotificationService.create_notification(
                 db=db,
                 notification_data=NotificationCreate(
@@ -151,7 +157,9 @@ class NotificationService:
                     message=f"O medicamento {medication.name} está com estoque baixo ({medication.stock} unidades restantes). Considere fazer reposição.",
                     notification_type=NotificationType.LOW_STOCK_ALERT,
                     user_id=user_id,
-                    medication_id=medication.id
+                    medication_id=medication.id,
+                    medication_name=medication.name,
+                    medication_dosage=str(medication.dosage)
                 )
             )
             notifications.append(notification)

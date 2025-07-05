@@ -11,6 +11,9 @@ from app.services.medication import (
     update_medication, delete_medication, get_low_stock_medications,
     get_expired_medications, auto_remove_empty_medications
 )
+from app.services.notification import NotificationService
+from app.models.notification import Notification, NotificationType
+from app.schemas.notification import NotificationCreate
 
 router = APIRouter(prefix="/medication", tags=["medication"])
 
@@ -49,20 +52,26 @@ def get_medications_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     """Lista medicamentos do usuário com cálculos de estoque."""
+    from app.services.medication import notify_critical_stock, auto_remove_empty_medications
+    notify_critical_stock(db, current_user.id)
+    auto_remove_empty_medications(db, current_user.id)
     return get_medications(db, current_user.id, skip, limit, search, category)
 
 @router.get("/{medication_id}", response_model=MedicationSchema)
 def get_medication_endpoint(
     medication_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Busca um medicamento específico."""
-    medication = get_medication(db, medication_id, current_user.id)
     
+    from app.services.medication import notify_critical_stock, auto_remove_empty_medications
+    notify_critical_stock(db, current_user.id)
+    auto_remove_empty_medications(db, current_user.id)
+
+    medication = get_medication(db, medication_id, current_user.id)
     if not medication:
         raise HTTPException(status_code=404, detail="Medicamento não encontrado")
-    
     return medication
 
 @router.put("/{medication_id}", response_model=MedicationSchema)
@@ -87,10 +96,30 @@ def delete_medication_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     """Remove um medicamento."""
-    success = delete_medication(db, medication_id, current_user.id)
+    medication = db.query(Medication).filter(
+        Medication.id == medication_id,
+        Medication.user_id == current_user.id
+    ).first()
     
-    if not success:
+    if not medication:
         raise HTTPException(status_code=404, detail="Medicamento não encontrado")
+    
+    # Cria a notificação ANTES de deletar
+    NotificationService.create_notification(
+        db,
+        NotificationCreate(
+            title=f"Medicamento excluído: {medication.name}",
+            message=f"O medicamento {medication.name} foi excluído da sua farmácia.",
+            notification_type=NotificationType.MEDICATION_EXPIRY,
+            user_id=current_user.id,
+            medication_id=medication.id,
+            medication_name=medication.name,
+            medication_dosage=str(medication.dosage)
+        )
+    )
+
+    db.delete(medication)
+    db.commit()
     
     return {"message": "Medicamento excluído com sucesso"}
 
@@ -251,4 +280,34 @@ def daily_medication_consumption(
         "consumed_medications": consumed_medications,
         "empty_medications": empty_medications,
         "total_medications_processed": len(medications)
-    } 
+    }
+
+@router.get("/to-replace/", response_model=List[dict])
+def get_medicines_to_replace(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Retorna medicamentos que acabaram ou precisam de reposição, baseando-se nas notificações.
+    """
+    notifications = db.query(Notification).filter(
+        Notification.user_id == current_user.id,
+        Notification.notification_type.in_([
+            NotificationType.MEDICATION_EXPIRY,
+            NotificationType.LOW_STOCK_ALERT
+        ])
+    ).order_by(Notification.created_at.desc()).all()
+
+    seen = set()
+    result = []
+    for n in notifications:
+        key = (n.medication_name, n.medication_dosage)
+        if key not in seen and n.medication_name:
+            seen.add(key)
+            result.append({
+                "name": n.medication_name,
+                "dosage": n.medication_dosage,
+                "notification_type": n.notification_type,
+                "created_at": n.created_at,
+            })
+    return result 

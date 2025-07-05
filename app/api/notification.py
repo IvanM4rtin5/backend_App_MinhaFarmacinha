@@ -20,7 +20,7 @@ router = APIRouter(prefix="/notification", tags=["notification"])
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
     await manager.connect(websocket, user_id)
-    print("CHEGOU NO HANDLER! user_id:", user_id)
+    # print("CHEGOU NO HANDLER! user_id:", user_id)
     try:
         while True:
             data = await websocket.receive_text()
@@ -49,7 +49,8 @@ async def create_notification(
         "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
         "read_at": notification.read_at.isoformat() if notification.read_at else None,
         "created_at": notification.created_at.isoformat() if notification.created_at else None,
-        "medication_name": notification.medication.name if notification.medication else None
+        "medication_name": notification.medication.name if notification.medication else None,
+        "medication_dosage": str(notification.medication.dosage) if notification.medication else None
     }
 
     await manager.send_personal_message(
@@ -84,11 +85,13 @@ def get_notifications(
             "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
             "read_at": notification.read_at.isoformat() if notification.read_at else None,
             "created_at": notification.created_at.isoformat() if notification.created_at else None,
-            "medication_name": None
+            "medication_name": notification.medication_name,
+            "medication_dosage": notification.medication_dosage,
         }
         
         if notification.medication:
             notification_dict["medication_name"] = notification.medication.name
+            notification_dict["medication_dosage"] = str(notification.medication.dosage)
         
         result.append(NotificationResponse(**notification_dict))
     
@@ -115,7 +118,8 @@ def get_notification(
         "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
         "read_at": notification.read_at.isoformat() if notification.read_at else None,
         "created_at": notification.created_at.isoformat() if notification.created_at else None,
-        "medication_name": notification.medication.name if notification.medication else None
+        "medication_name": notification.medication.name if notification.medication else None,
+        "medication_dosage": str(notification.medication.dosage) if notification.medication else None
     }
     
     return NotificationResponse(**notification_dict)
